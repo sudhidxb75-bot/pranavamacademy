@@ -6,3 +6,17 @@
 .iyd-banner-text p{color:#f2f2f2;margin-top:15px;}
 .iyd-btn{display:inline-block;background:#fff;color:#0f8b52;text-decoration:none;padding:15px 30px;border-radius:40px;font-weight:700;}
 @media(max-width:768px){.iyd-banner-content{flex-direction:column;text-align:center;}.iyd-banner-text h2{font-size:24px;}}
+.iyd-banner-content{
+    display:grid;
+    grid-template-columns:1.4fr 1fr;
+    gap:30px;
+    align-items:center;
+}
+
+.iyd-banner-image img{
+    width:100%;
+    height:260px;
+    object-fit:cover;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.2);
+}
