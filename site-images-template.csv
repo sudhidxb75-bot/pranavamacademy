@@ -17,3 +17,7 @@ offlineHero,Offline classes page hero,assets/images/hero-academy.jpg,Offline pro
 packagesHero,Packages page hero,assets/images/teach-with-us.jpg,Pranavam Academy packages discussion,Active,Replace ImageURL with a public HTTPS image URL to control from backend
 registerHero,Register page hero,assets/images/refer-friend.jpg,Register for Pranavam Academy classes,Active,Replace ImageURL with a public HTTPS image URL to control from backend
 teacherHero,Teacher page hero,assets/images/teach-with-us.jpg,Teach with Pranavam Academy,Active,Replace ImageURL with a public HTTPS image URL to control from backend
+onlineGroupYogaHero,Online Group Yoga page hero,assets/images/online-yoga.jpg,Online group yoga class at Pranavam Academy,Active,Replace ImageURL with a public HTTPS image URL to control from backend
+onlineGroupYogaBenefits,Online Group Yoga benefits section,assets/images/yoga-accessible.jpg,Guided online yoga practice,Active,
+therapeuticYogaHero,Therapeutic Yoga page hero,assets/images/yoga-accessible.jpg,Online therapeutic yoga guidance,Active,
+therapeuticYogaBenefits,Therapeutic Yoga benefits section,assets/images/yoga-accessible.jpg,Gentle therapeutic yoga session,Active,

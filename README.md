@@ -151,6 +151,28 @@ Live online sessions|Asana practice|Pranayama|Relaxation
 
 Website forms submit to the same Web App URL in `assets/config.js`.
 
+## Corporate Online Chair Yoga Form
+
+This revision includes a separate corporate enquiry form on:
+
+`corporate-chair-yoga.html#corporate-enquiry`
+
+This form is connected to the backend sheet:
+
+`CorporateLeads`
+
+The form now uses the same standardized `Packages` backend sheet. The **Corporate Package / Trial** dropdown loads active packages where the package details match `corporate chair yoga`. This means the website package cards and the corporate lead form can use the same package names, fees, duration and frequency.
+
+The corporate lead columns are created automatically by `setupPranavamAcademySheets`:
+
+`Timestamp, CompanyName, ContactPerson, Phone, Email, CityCountry, CompanySize, Program, PackageID, PackageName, PackageFee, PackageDuration, PackageFrequency, PackageSessions, Mode, Category, PreferredSessionType, PreferredTime, Frequency, PreferredSchedule, Requirement, Message, Page, Status, Notes`
+
+Use this form for companies, schools, offices, institutions and staff wellness enquiries. Normal individual students should use `register.html`.
+
+A backend report option is also available:
+
+`Pranavam Backend → Reports & Sheets → Create Corporate Leads Report`
+
 Do not run `doPost` directly from Apps Script editor. Test forms from the website only.
 
 ## Reports, Print and Clear Options
@@ -165,6 +187,7 @@ The private Google Sheets admin tools are available under:
 - Create Dashboard Report
 - Create Registration Report
 - Create Teacher Applications Report
+- Create Corporate Leads Report
 - Create Referral Report
 - Create Payment Report
 - Create Daily Class Sheet
@@ -208,10 +231,52 @@ Upload all files and folders to the repository, including:
 - `manifest.webmanifest`
 - `service-worker.js`
 - `google-apps-script.gs` for reference only
-- template CSV files for reference only
+- template CSV files for reference only, including `packages-template.csv`
 
 After uploading, hard refresh the website once. If the old version is cached, change the cache version in `service-worker.js` and upload again.
 
 ## Important Note
 
 All public website backend data now comes from the single Web App URL in `assets/config.js`. This is simpler and avoids managing separate published CSV URLs.
+
+
+## Latest revision: specific package/detail links and corporate registration
+
+This package now includes:
+
+- Program package links such as `packages.html?category=Online%20Dance` and `packages.html?category=Offline%20Karate`.
+- The Packages page automatically filters to the selected program when opened from a program page or detail button.
+- Main program cards now point to the correct online/offline detail pages instead of a generic section only.
+- Corporate Chair Yoga has two separate forms:
+  - `corporate-chair-yoga.html#corporate-enquiry` for free trial / enquiry leads.
+  - `corporate-chair-yoga.html#corporate-registration` for confirmed corporate package registrations.
+- Corporate registrations are saved in a separate backend sheet named `CorporateRegistrations`.
+- Google Sheets backend menu includes a Corporate Registrations report.
+
+After updating Apps Script, run `setupPranavamAcademySheets` again so the new `CorporateRegistrations` sheet and report headers are created.
+
+
+## Separate Online Yoga Pages Added
+
+This package includes two new standalone yoga pages:
+
+- `online-group-yoga.html` — donation-based Online Group Yoga page with benefits, free trial CTA, package link and registration link.
+- `therapeutic-yoga.html` — Online Therapeutic Yoga page with benefits, suitability, important wellness disclaimer, package link and registration link.
+
+The Online Programs menu now points directly to these pages:
+
+- Online Group Yoga Class → `online-group-yoga.html`
+- Online Corporate Chair Yoga Class → `corporate-chair-yoga.html`
+- Online Therapeutic Yoga → `therapeutic-yoga.html`
+
+Package buttons can now point to specific package groups using:
+
+- `packages.html?program=Online%20Group%20Yoga`
+- `packages.html?program=Online%20Therapeutic%20Yoga`
+
+New backend image keys are also supported in the `SiteImages` sheet:
+
+- `onlineGroupYogaHero`
+- `onlineGroupYogaBenefits`
+- `therapeuticYogaHero`
+- `therapeuticYogaBenefits`
