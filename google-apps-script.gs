@@ -37,6 +37,7 @@ function onOpen() {
 
   ui.createMenu('Pranavam Backend')
     .addItem('Setup / Repair Sheets', 'setupPranavamAcademySheets')
+    .addItem('Update Corporate Chair Yoga Packages', 'updateCorporateChairYogaPackages')
     .addSubMenu(reportsMenu)
     .addSubMenu(printMenu)
     .addSubMenu(clearMenu)
@@ -264,6 +265,7 @@ function seedPackages_() {
 
   if (sh.getLastRow() < 2) {
     sh.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
+    archiveLegacyCorporateChairYogaPackages_(sh);
     return;
   }
 
@@ -271,6 +273,34 @@ function seedPackages_() {
   const missingRows = rows.filter(r => !existingIds.has(String(r[0]).trim()));
   if (missingRows.length) {
     sh.getRange(sh.getLastRow() + 1, 1, missingRows.length, missingRows[0].length).setValues(missingRows);
+  }
+  archiveLegacyCorporateChairYogaPackages_(sh);
+}
+
+function updateCorporateChairYogaPackages() {
+  seedPackages_();
+  SpreadsheetApp.getUi().alert('Corporate Chair Yoga package options updated. Old small/medium/large rows have been marked Inactive and new 1, 3, 6 and 12 month rows have been added if missing.');
+}
+
+function archiveLegacyCorporateChairYogaPackages_(sh) {
+  ensureHeaders_(sh, 'Packages');
+  if (sh.getLastRow() < 2) return;
+
+  const values = sh.getDataRange().getDisplayValues();
+  const headers = values[0].map(h => String(h).trim());
+  const idCol = headers.indexOf('PackageID') + 1;
+  const nameCol = headers.indexOf('PackageName') + 1;
+  const statusCol = headers.indexOf('Status') + 1;
+  if (!idCol || !nameCol || !statusCol) return;
+
+  const legacyIds = ['PKG002','PKG007','PKG008','PKG009','PKG010'];
+  const legacyNames = ['online corporate chair yoga class','corporate chair yoga - small team','corporate chair yoga - medium team','corporate chair yoga - large team'];
+  for (let r = 2; r <= sh.getLastRow(); r++) {
+    const packageId = String(sh.getRange(r, idCol).getDisplayValue()).trim();
+    const packageName = String(sh.getRange(r, nameCol).getDisplayValue()).trim().toLowerCase();
+    if (legacyIds.indexOf(packageId) !== -1 || legacyNames.indexOf(packageName) !== -1) {
+      sh.getRange(r, statusCol).setValue('Inactive');
+    }
   }
 }
 
@@ -712,22 +742,53 @@ function escapeHtml_(text) {
 
 function defaultPackages_() {
   return [
-    ['PKG001','Online','Yoga','Online Group Yoga Class','Donation-Based','Monthly','Live group sessions','Regular online batch','','Online','Live online group sessions|Asana, pranayama and relaxation|Pay any amount you wish|No minimum or suggested donation','Open online group yoga program accessible to all students.','','Yes','Active'],
-    ['PKG002','Online','Yoga','Online Corporate Chair Yoga Class','Custom Package','Monthly','15-minute staff sessions','Custom company schedule','','Online','15-minute online sessions|Stress relief and posture support|Suitable for office staff|Custom corporate package','Designed for companies, teams and employee wellness.','','Yes','Active'],
-    ['PKG-CORP-TRIAL','Online','Corporate Chair Yoga','Corporate Chair Yoga - Free Trial','Free','1 Month','Flexible','15-minute online sessions','Office-friendly timing','Online','15-minute chair yoga|Stress relief|No costume change needed|Employee wellness','Free one-month corporate chair yoga trial for companies.','Not applicable','Yes','Active'],
-    ['PKG-CORP-SMALL','Online','Corporate Chair Yoga','Corporate Chair Yoga - Small Team','₹7,500 / $99','Monthly','5 days/week','20 short sessions','Before work / Lunch / Evening','Online','Up to 20 employees|15-minute sessions|Desk-friendly stretches|Breathing and focus','Monthly online chair yoga package for small teams.','5% for referred company','Yes','Active'],
-    ['PKG-CORP-MEDIUM','Online','Corporate Chair Yoga','Corporate Chair Yoga - Medium Team','₹15,000 / $199','Monthly','5 days/week','20 short sessions','Before work / Lunch / Evening','Online','Up to 50 employees|15-minute sessions|Stress relief|Attendance support','Monthly online chair yoga package for medium teams.','5% for referred company','Yes','Active'],
-    ['PKG-CORP-LARGE','Online','Corporate Chair Yoga','Corporate Chair Yoga - Large Team','₹25,000 / $299','Monthly','5 days/week','20 short sessions','Before work / Lunch / Evening','Online','Up to 100 employees|15-minute sessions|Wellness theme support|Monthly summary','Monthly online chair yoga package for larger teams.','5% for referred company','Yes','Active'],
-    ['PKG003','Online','Yoga','Online Therapeutic Yoga','Contact for Fee','Monthly','Guided sessions','Personalized support','','Online','Gentle guided yoga|Breathing and relaxation|Individual attention|Suitable for specific wellness goals','Personalized yoga support for wellbeing and flexibility.','','No','Active'],
-    ['PKG004','Online','Karate','Online Karate Class','Contact for Fee','Monthly','Regular online sessions','Beginner and regular batch','','Online','Basic techniques|Fitness drills|Discipline and confidence building','Online karate training for discipline, fitness and confidence.','','No','Active'],
-    ['PKG005','Online','Dance','Online Dance Class','Contact for Fee','Monthly','Regular online sessions','Group batch','','Online','Step-by-step learning|Creative movement|Beginner-friendly sessions','Online dance training for rhythm, movement and expression.','','No','Active'],
-    ['PKG006','Online','Music','Online Music Class','Contact for Fee','Monthly','Regular online sessions','Group or individual options','','Online','Vocal or instrument guidance|Practice support|Beginner-friendly approach','Online music learning with guided practice.','','No','Active'],
-    ['PKG007','Online','Drawing','Online Drawing Class','Contact for Fee','Monthly','Regular online sessions','Creative batch','','Online','Basic drawing skills|Creative projects|Step-by-step guidance','Online drawing and creative art sessions for students.','','No','Active'],
-    ['PKG008','Offline','Yoga','Offline Yoga Regular Batch','Contact for Fee','Monthly','Studio classes','Morning or evening batches','','Pranavam Academy','Asanas and pranayama|Meditation and relaxation|In-person correction and guidance','Traditional in-person yoga classes at the academy.','','No','Active'],
-    ['PKG009','Offline','Karate','Offline Karate Training Package','Contact for Fee','Monthly','Regular academy batches','Children and regular batches','','Pranavam Academy','Karate basics|Fitness and discipline|Self-defense skills','Discipline, fitness, self-confidence and self-defense.','','No','Active'],
-    ['PKG010','Offline','Dance','Offline Dance Class Package','Contact for Fee','Monthly','Regular academy batches','Children and regular batches','','Pranavam Academy','Dance basics|Choreography practice|Stage confidence','Creative movement and performance skills.','','No','Active'],
-    ['PKG011','Offline','Music','Offline Music Class Package','Contact for Fee','Monthly','Regular academy batches','Group or individual options','','Pranavam Academy','Foundational learning|Voice or instrument support|Regular practice','Music training at the academy with guided practice.','','No','Active'],
-    ['PKG012','Offline','Drawing','Offline Drawing Class Package','Contact for Fee','Monthly','Regular academy batches','Creative batches','','Pranavam Academy','Sketching basics|Color and composition|Creative projects','Drawing and creative arts training at the academy.','','No','Active']
+    ["PKG001","Online","Yoga","Online Group Yoga - Free Trial","Free","1 Month","5 days/week","Up to 20 live sessions","Morning / Evening Batch","Online","Beginner friendly|Live guided practice|Breathing and relaxation|Donation-based continuation","One-month free online group yoga trial for new students.","Not applicable","Yes","Active"],
+    ["PKG002","Online","Yoga","Online Group Yoga - Donation Based","Voluntary Donation","Monthly","5 days/week","Up to 20 live sessions","Morning / Evening Batch","Online","No compulsory fee|Students may contribute any amount|Part of revenue supports charity and yoga promotion","Accessible online group yoga with voluntary contribution only.","Not applicable","Yes","Active"],
+    ["PKG003","Online","Yoga","Online Therapeutic Yoga - Basic","₹2,500 / $35","Monthly","2 days/week","8 live sessions","By appointment","Online","Gentle asanas|Breathing practice|Relaxation|Individual attention","Gentle therapeutic yoga support for flexibility, stress relief and wellbeing.","5% for referred student","No","Active"],
+    ["PKG004","Online","Yoga","Online Therapeutic Yoga - Standard","₹4,000 / $55","Monthly","3 days/week","12 live sessions","By appointment","Online","Personalized practice|Posture support|Relaxation|Progress guidance","Standard therapeutic yoga plan with more frequent guidance.","5% for referred student","No","Active"],
+    ["PKG005","Online","Yoga","Online Therapeutic Yoga - 3 Months","₹10,800 / $150","3 Months","3 days/week","36 live sessions","By appointment","Online","Personalized practice|Progress review|Breathing and relaxation|Consistency support","Three-month therapeutic yoga package with discounted fee.","7% for referred student","No","Active"],
+    ["PKG006","Online","Yoga","Online Therapeutic Yoga - 6 Months","₹20,400 / $285","6 Months","3 days/week","72 live sessions","By appointment","Online","Personalized practice|Progress review|Breathing and relaxation|Long-term support","Six-month therapeutic yoga package for steady progress.","10% for referred student","No","Active"],
+    ["PKG-CORP-TRIAL","Online","Corporate Chair Yoga","Corporate Chair Yoga - Free Trial","Free","1 Month","Flexible","15-minute online trial sessions","Office-friendly timing","Online","Free trial for companies|15-minute chair yoga|Stress relief|No costume change needed|Employee wellness","Free one-month corporate chair yoga trial for companies and teams.","Not applicable","Yes","Active"],
+    ["PKG-CORP-001","Online","Corporate Chair Yoga","Corporate Chair Yoga - 1 Month","₹7,500 / $99","1 Month","5 days/week","20 short sessions","Before work / Lunch / Evening","Online","Up to 50 employees|15-minute sessions|Desk-friendly stretches|Breathing and focus|Monthly wellness start","One-month online chair yoga package for companies starting employee wellness sessions.","5% for referred company","Yes","Active"],
+    ["PKG-CORP-003","Online","Corporate Chair Yoga","Corporate Chair Yoga - 3 Months","₹21,000 / $279","3 Months","5 days/week","60 short sessions","Before work / Lunch / Evening","Online","Up to 50 employees|15-minute sessions|Stress relief|Posture support|Quarterly consistency plan","Three-month online chair yoga package for consistent employee wellness practice.","7% for referred company","Yes","Active"],
+    ["PKG-CORP-006","Online","Corporate Chair Yoga","Corporate Chair Yoga - 6 Months","₹39,000 / $499","6 Months","5 days/week","120 short sessions","Before work / Lunch / Evening","Online","Up to 50 employees|15-minute sessions|Breathing and stretching|Monthly progress review|Long-term wellness support","Six-month online chair yoga package for companies planning a sustained wellness program.","10% for referred company","Yes","Active"],
+    ["PKG-CORP-012","Online","Corporate Chair Yoga","Corporate Chair Yoga - 12 Months","₹72,000 / $899","12 Months","5 days/week","240 short sessions","Before work / Lunch / Evening","Online","Up to 50 employees|15-minute sessions|Annual employee wellness plan|Priority scheduling|Best value package","Annual online chair yoga package for companies that want a full-year employee wellness routine.","10% for referred company","Yes","Active"],
+    ["PKG011","Online","Karate","Online Karate - Monthly","₹1,200 / $20","Monthly","2 days/week","8 live sessions","Evening Batch","Online","Basics and stances|Fitness drills|Discipline|Confidence building","Online karate training for beginners and regular students.","5% for referred student","Trial class","Active"],
+    ["PKG012","Online","Karate","Online Karate - 3 Months","₹3,300 / $55","3 Months","2 days/week","24 live sessions","Evening Batch","Online","Basics and stances|Fitness drills|Discipline|Confidence building","Three-month online karate package with discounted fee.","7% for referred student","Trial class","Active"],
+    ["PKG013","Online","Karate","Online Karate - 6 Months","₹6,000 / $100","6 Months","2 days/week","48 live sessions","Evening Batch","Online","Basics and stances|Fitness drills|Discipline|Confidence building","Six-month online karate package for continuous training.","10% for referred student","Trial class","Active"],
+    ["PKG014","Online","Karate","Online Karate - 12 Months","₹11,000 / $180","12 Months","2 days/week","96 live sessions","Evening Batch","Online","Basics and stances|Fitness drills|Discipline|Confidence building","Annual online karate package with maximum savings.","10% for referred student","Trial class","Active"],
+    ["PKG015","Online","Dance","Online Dance - Monthly","₹1,200 / $20","Monthly","2 days/week","8 live sessions","Evening / Weekend Batch","Online","Step-by-step learning|Rhythm and movement|Beginner friendly|Practice support","Online dance class for rhythm, movement and confidence.","5% for referred student","Trial class","Active"],
+    ["PKG016","Online","Dance","Online Dance - 3 Months","₹3,300 / $55","3 Months","2 days/week","24 live sessions","Evening / Weekend Batch","Online","Step-by-step learning|Rhythm and movement|Beginner friendly|Practice support","Three-month online dance package with discounted fee.","7% for referred student","Trial class","Active"],
+    ["PKG017","Online","Dance","Online Dance - 6 Months","₹6,000 / $100","6 Months","2 days/week","48 live sessions","Evening / Weekend Batch","Online","Step-by-step learning|Rhythm and movement|Beginner friendly|Practice support","Six-month online dance package for steady learning.","10% for referred student","Trial class","Active"],
+    ["PKG018","Online","Dance","Online Dance - 12 Months","₹11,000 / $180","12 Months","2 days/week","96 live sessions","Evening / Weekend Batch","Online","Step-by-step learning|Rhythm and movement|Beginner friendly|Practice support","Annual online dance package with maximum savings.","10% for referred student","Trial class","Active"],
+    ["PKG019","Online","Music","Online Music - Group Monthly","₹1,500 / $25","Monthly","2 days/week","8 live sessions","Evening / Weekend Batch","Online","Voice or instrument guidance|Basic theory|Practice support|Beginner friendly","Online group music class for beginners and regular learners.","5% for referred student","Trial class","Active"],
+    ["PKG020","Online","Music","Online Music - Individual Monthly","₹3,000 / $45","Monthly","1 day/week","4 personal sessions","By appointment","Online","One-to-one guidance|Personal practice plan|Voice or instrument support|Progress feedback","Individual online music coaching package.","5% for referred student","Trial class","Active"],
+    ["PKG021","Online","Music","Online Music - 3 Months Group","₹4,200 / $70","3 Months","2 days/week","24 live sessions","Evening / Weekend Batch","Online","Voice or instrument guidance|Basic theory|Practice support|Beginner friendly","Three-month online group music package.","7% for referred student","Trial class","Active"],
+    ["PKG022","Online","Music","Online Music - 6 Months Group","₹8,000 / $130","6 Months","2 days/week","48 live sessions","Evening / Weekend Batch","Online","Voice or instrument guidance|Basic theory|Practice support|Beginner friendly","Six-month online group music package.","10% for referred student","Trial class","Active"],
+    ["PKG023","Online","Drawing","Online Drawing - Monthly","₹800 / $15","Monthly","2 days/week","8 live sessions","Evening / Weekend Batch","Online","Sketching basics|Color practice|Creative projects|Step-by-step guidance","Online drawing and creative art class for children and beginners.","5% for referred student","Trial class","Active"],
+    ["PKG024","Online","Drawing","Online Drawing - 3 Months","₹2,200 / $40","3 Months","2 days/week","24 live sessions","Evening / Weekend Batch","Online","Sketching basics|Color practice|Creative projects|Step-by-step guidance","Three-month online drawing package with discounted fee.","7% for referred student","Trial class","Active"],
+    ["PKG025","Online","Drawing","Online Drawing - 6 Months","₹4,000 / $70","6 Months","2 days/week","48 live sessions","Evening / Weekend Batch","Online","Sketching basics|Color practice|Creative projects|Step-by-step guidance","Six-month online drawing package for steady improvement.","10% for referred student","Trial class","Active"],
+    ["PKG026","Online","Drawing","Online Drawing - 12 Months","₹7,500 / $125","12 Months","2 days/week","96 live sessions","Evening / Weekend Batch","Online","Sketching basics|Color practice|Creative projects|Step-by-step guidance","Annual online drawing package with maximum savings.","10% for referred student","Trial class","Active"],
+    ["PKG027","Offline","Yoga","Offline Yoga - Monthly","₹1,000","Monthly","3 days/week","12 studio sessions","Morning / Evening Batch","Pranavam Academy","Asanas|Pranayama|Meditation|In-person correction","Regular offline yoga class at Pranavam Academy.","5% for referred student","Trial class","Active"],
+    ["PKG028","Offline","Yoga","Offline Yoga - 3 Months","₹2,700","3 Months","3 days/week","36 studio sessions","Morning / Evening Batch","Pranavam Academy","Asanas|Pranayama|Meditation|In-person correction","Three-month offline yoga package with discounted fee.","7% for referred student","Trial class","Active"],
+    ["PKG029","Offline","Yoga","Offline Yoga - 6 Months","₹5,000","6 Months","3 days/week","72 studio sessions","Morning / Evening Batch","Pranavam Academy","Asanas|Pranayama|Meditation|In-person correction","Six-month offline yoga package for consistent practice.","10% for referred student","Trial class","Active"],
+    ["PKG030","Offline","Yoga","Offline Yoga - 12 Months","₹9,000","12 Months","3 days/week","144 studio sessions","Morning / Evening Batch","Pranavam Academy","Asanas|Pranayama|Meditation|In-person correction","Annual offline yoga package with maximum savings.","10% for referred student","Trial class","Active"],
+    ["PKG031","Offline","Karate","Offline Karate - Monthly","₹800","Monthly","2 days/week","8 studio sessions","Evening / Weekend Batch","Pranavam Academy","Karate basics|Fitness|Discipline|Self-defense","Offline karate training for children and regular learners.","5% for referred student","Trial class","Active"],
+    ["PKG032","Offline","Karate","Offline Karate - 3 Months","₹2,200","3 Months","2 days/week","24 studio sessions","Evening / Weekend Batch","Pranavam Academy","Karate basics|Fitness|Discipline|Self-defense","Three-month offline karate package with discounted fee.","7% for referred student","Trial class","Active"],
+    ["PKG033","Offline","Karate","Offline Karate - 6 Months","₹4,200","6 Months","2 days/week","48 studio sessions","Evening / Weekend Batch","Pranavam Academy","Karate basics|Fitness|Discipline|Self-defense","Six-month offline karate package.","10% for referred student","Trial class","Active"],
+    ["PKG034","Offline","Karate","Offline Karate - 12 Months","₹7,500","12 Months","2 days/week","96 studio sessions","Evening / Weekend Batch","Pranavam Academy","Karate basics|Fitness|Discipline|Self-defense","Annual offline karate package with maximum savings.","10% for referred student","Trial class","Active"],
+    ["PKG035","Offline","Dance","Offline Dance - Monthly","₹1,000","Monthly","2 days/week","8 studio sessions","Evening / Weekend Batch","Pranavam Academy","Dance basics|Rhythm|Choreography practice|Stage confidence","Offline dance class for children and regular learners.","5% for referred student","Trial class","Active"],
+    ["PKG036","Offline","Dance","Offline Dance - 3 Months","₹2,700","3 Months","2 days/week","24 studio sessions","Evening / Weekend Batch","Pranavam Academy","Dance basics|Rhythm|Choreography practice|Stage confidence","Three-month offline dance package.","7% for referred student","Trial class","Active"],
+    ["PKG037","Offline","Dance","Offline Dance - 6 Months","₹5,000","6 Months","2 days/week","48 studio sessions","Evening / Weekend Batch","Pranavam Academy","Dance basics|Rhythm|Choreography practice|Stage confidence","Six-month offline dance package.","10% for referred student","Trial class","Active"],
+    ["PKG038","Offline","Dance","Offline Dance - 12 Months","₹9,000","12 Months","2 days/week","96 studio sessions","Evening / Weekend Batch","Pranavam Academy","Dance basics|Rhythm|Choreography practice|Stage confidence","Annual offline dance package with maximum savings.","10% for referred student","Trial class","Active"],
+    ["PKG039","Offline","Music","Offline Music - Group Monthly","₹1,500","Monthly","2 days/week","8 studio sessions","Evening / Weekend Batch","Pranavam Academy","Voice or instrument guidance|Music basics|Practice support|Progress review","Offline music class at Pranavam Academy.","5% for referred student","Trial class","Active"],
+    ["PKG040","Offline","Music","Offline Music - Individual Monthly","₹3,000","Monthly","1 day/week","4 personal sessions","By appointment","Pranavam Academy","One-to-one guidance|Personal practice plan|Progress feedback|Voice or instrument support","Individual offline music coaching package.","5% for referred student","Trial class","Active"],
+    ["PKG041","Offline","Music","Offline Music - 3 Months Group","₹4,200","3 Months","2 days/week","24 studio sessions","Evening / Weekend Batch","Pranavam Academy","Voice or instrument guidance|Music basics|Practice support|Progress review","Three-month offline group music package.","7% for referred student","Trial class","Active"],
+    ["PKG042","Offline","Music","Offline Music - 6 Months Group","₹8,000","6 Months","2 days/week","48 studio sessions","Evening / Weekend Batch","Pranavam Academy","Voice or instrument guidance|Music basics|Practice support|Progress review","Six-month offline group music package.","10% for referred student","Trial class","Active"],
+    ["PKG043","Offline","Drawing","Offline Drawing - Monthly","₹600","Monthly","2 days/week","8 studio sessions","Evening / Weekend Batch","Pranavam Academy","Sketching basics|Coloring|Creative projects|Teacher guidance","Offline drawing and creative art class for children.","5% for referred student","Trial class","Active"],
+    ["PKG044","Offline","Drawing","Offline Drawing - 3 Months","₹1,600","3 Months","2 days/week","24 studio sessions","Evening / Weekend Batch","Pranavam Academy","Sketching basics|Coloring|Creative projects|Teacher guidance","Three-month offline drawing package.","7% for referred student","Trial class","Active"],
+    ["PKG045","Offline","Drawing","Offline Drawing - 6 Months","₹3,000","6 Months","2 days/week","48 studio sessions","Evening / Weekend Batch","Pranavam Academy","Sketching basics|Coloring|Creative projects|Teacher guidance","Six-month offline drawing package.","10% for referred student","Trial class","Active"],
+    ["PKG046","Offline","Drawing","Offline Drawing - 12 Months","₹5,500","12 Months","2 days/week","96 studio sessions","Evening / Weekend Batch","Pranavam Academy","Sketching basics|Coloring|Creative projects|Teacher guidance","Annual offline drawing package with maximum savings.","10% for referred student","Trial class","Active"]
   ];
 }
 

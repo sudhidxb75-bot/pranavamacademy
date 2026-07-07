@@ -280,3 +280,17 @@ New backend image keys are also supported in the `SiteImages` sheet:
 - `onlineGroupYogaBenefits`
 - `therapeuticYogaHero`
 - `therapeuticYogaBenefits`
+
+
+## Latest revision: Corporate Chair Yoga duration packages
+
+Corporate Chair Yoga now includes duration-based package options:
+
+- 1 Month
+- 3 Months
+- 6 Months
+- 12 Months
+
+The corporate enquiry and corporate registration form package dropdowns use the same `Packages` data, so update the `Packages` sheet to control package names, fees, duration, frequency and session details.
+
+After replacing Apps Script, run `setupPranavamAcademySheets` once. You can also use `Pranavam Backend → Update Corporate Chair Yoga Packages` to add the new duration packages and automatically mark the previous Small/Medium/Large corporate rows as `Inactive`.
