@@ -56,3 +56,19 @@
   .hero-img img{height:220px;}
   .hero-controls{padding-bottom:18px;}
 }
+
+/* Corporate chair yoga enquiry form */
+#corporate-enquiry .highlight{height:100%;}
+#corporate-enquiry ul{margin-top:18px;}
+#corporate-enquiry li{margin:8px 0;color:#33453d;}
+.form-message:empty{display:none;}
+.form-message:not(:empty){display:block;}
+@media(max-width:900px){#corporate-enquiry .lead{text-align:left;}}
+
+/* Standardized package selector inside corporate enquiry form */
+.package-choice-summary{background:#f7fbf8;border:1px solid #dcece3;border-radius:18px;padding:14px 16px;color:#274438;font-weight:600;}
+.package-choice-summary strong{display:block;color:#123326;font-size:16px;margin-bottom:8px;}
+.package-choice-summary p{margin:10px 0 0;color:#52645c;font-weight:500;}
+.package-choice-summary ul{margin:10px 0 0;padding-left:20px;color:#344b41;font-weight:500;}
+.package-choice-meta{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;}
+.package-choice-meta span{background:#eef9f2;border:1px solid #d5ecde;border-radius:999px;padding:6px 10px;color:#26493a;font-size:13px;}

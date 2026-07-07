@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHeroSlider();
   loadSiteImages();
   loadPackages();
+  loadPackageSelects();
   handleForms();
 });
 
@@ -360,8 +361,20 @@ function packageCard(p){
     ${donationNote}
     ${features.length ? `<div class="detail-block"><strong>Includes</strong><ul class="package-list">${features.map(f=>`<li>${escapeHTML(f)}</li>`).join('')}</ul></div>` : ''}
     ${details.length ? `<div class="package-details">${details.map(([k,v])=>`<div><span>${escapeHTML(k)}</span><strong>${escapeHTML(v)}</strong></div>`).join('')}</div>` : ''}
-    <a class="btn btn-green" href="register.html?package=${encodeURIComponent(name)}">Register</a>
+    <a class="btn btn-green" href="${packageActionLink(name, category)}">${packageActionText(name, category)}</a>
   </article>`;
+}
+
+function packageActionLink(name, category){
+  const text = `${name} ${category}`.toLowerCase();
+  if(text.includes('corporate') && text.includes('chair yoga')) return 'corporate-chair-yoga.html#corporate-enquiry';
+  return `register.html?package=${encodeURIComponent(name)}`;
+}
+
+function packageActionText(name, category){
+  const text = `${name} ${category}`.toLowerCase();
+  if(text.includes('corporate') && text.includes('chair yoga')) return 'Book Corporate Trial';
+  return 'Register';
 }
 
 function setupFilters(data){
@@ -376,9 +389,135 @@ function setupFilters(data){
   }));
 }
 
+async function loadPackageSelects(){
+  const selects=[...document.querySelectorAll('[data-package-select]')];
+  if(!selects.length) return;
+
+  let data = await loadRowsFromBackend('packages', fallbackPackages());
+  data = data.filter(p => (getVal(p,'Status') || 'Active').toLowerCase() === 'active');
+  if(!data.length) data = fallbackPackages();
+
+  selects.forEach(select => populatePackageSelect(select, data));
+}
+
+function packageSearchText(p){
+  return [
+    getVal(p,'PackageID'),
+    getVal(p,'Mode'),
+    getVal(p,'Category','Program'),
+    getVal(p,'PackageName','Name','ClassName'),
+    getVal(p,'Description','ShortDescription'),
+    getVal(p,'Features','Includes','PackageDetails','Details','Benefits')
+  ].join(' ').toLowerCase();
+}
+
+function packageMatchesFilter(p, filterText){
+  const words = String(filterText || '').toLowerCase().split(/\s+/).filter(Boolean);
+  if(!words.length) return true;
+  const haystack = packageSearchText(p);
+  return words.every(word => haystack.includes(word));
+}
+
+function populatePackageSelect(select, allPackages){
+  const filter = select.dataset.packageFilter || '';
+  let packages = allPackages.filter(p => packageMatchesFilter(p, filter));
+
+  if(!packages.length && filter.toLowerCase().includes('corporate')) {
+    packages = fallbackPackages().filter(p => packageMatchesFilter(p, filter));
+  }
+
+  if(!packages.length){
+    select.innerHTML = '<option value="">No matching packages found</option>';
+    updatePackageSummary(select, null);
+    return;
+  }
+
+  select.innerHTML = '<option value="">Select package / trial</option>' + packages.map((p, index) => {
+    const name = getVal(p,'PackageName','Name','ClassName') || 'Package';
+    const price = displayPrice(p);
+    const duration = getVal(p,'Duration') || '';
+    const label = [name, price, duration].filter(Boolean).join(' - ');
+    return `<option value="${escapeHTML(name)}" data-package-index="${index}">${escapeHTML(label)}</option>`;
+  }).join('');
+
+  const fill = () => {
+    const selectedOption = select.options[select.selectedIndex];
+    const selectedPackage = selectedOption && selectedOption.dataset.packageIndex !== undefined
+      ? packages[Number(selectedOption.dataset.packageIndex)]
+      : null;
+    applyPackageToForm(select, selectedPackage);
+    updatePackageSummary(select, selectedPackage);
+  };
+
+  select.addEventListener('change', fill);
+
+  const params = new URLSearchParams(location.search);
+  const requestedPackage = params.get('package');
+  if(requestedPackage){
+    const matching = [...select.options].find(opt => opt.value.toLowerCase() === requestedPackage.toLowerCase());
+    if(matching) select.value = matching.value;
+  }
+  fill();
+}
+
+function applyPackageToForm(select, p){
+  const form = select.closest('form');
+  if(!form) return;
+
+  const setField = (name, value) => {
+    const field = form.querySelector(`[name="${name}"]`);
+    if(field) field.value = value || '';
+  };
+
+  if(!p){
+    ['PackageID','PackageFee','PackageDuration','PackageFrequency','PackageSessions','Mode','Category'].forEach(name => setField(name, ''));
+    return;
+  }
+
+  setField('PackageID', getVal(p,'PackageID'));
+  setField('PackageName', getVal(p,'PackageName','Name','ClassName'));
+  setField('PackageFee', displayPrice(p));
+  setField('PackageDuration', getVal(p,'Duration'));
+  setField('PackageFrequency', getVal(p,'Frequency'));
+  setField('PackageSessions', getVal(p,'Sessions'));
+  setField('Mode', getVal(p,'Mode'));
+  setField('Category', getVal(p,'Category','Program'));
+}
+
+function updatePackageSummary(select, p){
+  const summarySelector = select.dataset.packageSummary;
+  const summary = summarySelector ? document.querySelector(summarySelector) : null;
+  if(!summary) return;
+
+  if(!p){
+    summary.innerHTML = 'Select a corporate package or free trial to view duration, frequency and fee details.';
+    return;
+  }
+
+  const name = getVal(p,'PackageName','Name','ClassName') || 'Selected package';
+  const details = [
+    ['Fee', displayPrice(p)],
+    ['Duration', getVal(p,'Duration')],
+    ['Frequency', getVal(p,'Frequency')],
+    ['Sessions', getVal(p,'Sessions')],
+    ['Trial', getVal(p,'TrialAvailable')]
+  ].filter(([,value]) => value);
+  const desc = getVal(p,'Description','ShortDescription');
+  const features = packageFeatures(p);
+
+  summary.innerHTML = `<strong>${escapeHTML(name)}</strong>`
+    + `<div class="package-choice-meta">${details.map(([k,v])=>`<span>${escapeHTML(k)}: <b>${escapeHTML(v)}</b></span>`).join('')}</div>`
+    + (desc ? `<p>${escapeHTML(desc)}</p>` : '')
+    + (features.length ? `<ul>${features.map(f=>`<li>${escapeHTML(f)}</li>`).join('')}</ul>` : '');
+}
+
 function fallbackPackages(){return [
  {Mode:'Online',Category:'Yoga',PackageName:'Online Group Yoga Class',Price:'Donation-Based',Duration:'Monthly',Frequency:'Live group sessions',Sessions:'Regular online batch',Description:'Open online group yoga program accessible to all students.',Features:'Live online group sessions|Asana, pranayama and relaxation|Pay any amount you wish|No minimum or suggested donation'},
  {Mode:'Online',Category:'Yoga',PackageName:'Online Corporate Chair Yoga Class',Price:'Custom Package',Duration:'Monthly',Frequency:'15-minute staff sessions',Sessions:'Custom company schedule',Description:'Designed for companies, teams and employee wellness.',Features:'15-minute online sessions|Stress relief and posture support|Suitable for office staff|Custom corporate package'},
+ {PackageID:'PKG-CORP-TRIAL',Mode:'Online',Category:'Corporate Chair Yoga',PackageName:'Corporate Chair Yoga - Free Trial',Price:'Free',Duration:'1 Month',Frequency:'Flexible',Sessions:'15-minute online sessions',ClassTime:'Office-friendly timing',Location:'Online',Description:'Free one-month corporate chair yoga trial for companies.',Features:'15-minute chair yoga|Stress relief|No costume change needed|Employee wellness',ReferralDiscount:'Not applicable',TrialAvailable:'Yes'},
+ {PackageID:'PKG-CORP-SMALL',Mode:'Online',Category:'Corporate Chair Yoga',PackageName:'Corporate Chair Yoga - Small Team',Price:'₹7,500 / $99',Duration:'Monthly',Frequency:'5 days/week',Sessions:'20 short sessions',ClassTime:'Before work / Lunch / Evening',Location:'Online',Description:'Monthly online chair yoga package for small teams.',Features:'Up to 20 employees|15-minute sessions|Desk-friendly stretches|Breathing and focus',ReferralDiscount:'5% for referred company',TrialAvailable:'Yes'},
+ {PackageID:'PKG-CORP-MEDIUM',Mode:'Online',Category:'Corporate Chair Yoga',PackageName:'Corporate Chair Yoga - Medium Team',Price:'₹15,000 / $199',Duration:'Monthly',Frequency:'5 days/week',Sessions:'20 short sessions',ClassTime:'Before work / Lunch / Evening',Location:'Online',Description:'Monthly online chair yoga package for medium teams.',Features:'Up to 50 employees|15-minute sessions|Stress relief|Attendance support',ReferralDiscount:'5% for referred company',TrialAvailable:'Yes'},
+ {PackageID:'PKG-CORP-LARGE',Mode:'Online',Category:'Corporate Chair Yoga',PackageName:'Corporate Chair Yoga - Large Team',Price:'₹25,000 / $299',Duration:'Monthly',Frequency:'5 days/week',Sessions:'20 short sessions',ClassTime:'Before work / Lunch / Evening',Location:'Online',Description:'Monthly online chair yoga package for larger teams.',Features:'Up to 100 employees|15-minute sessions|Wellness theme support|Monthly summary',ReferralDiscount:'5% for referred company',TrialAvailable:'Yes'},
  {Mode:'Online',Category:'Yoga',PackageName:'Online Therapeutic Yoga',Price:'Contact for Fee',Duration:'Monthly',Frequency:'Guided sessions',Sessions:'Personalized support',Description:'Personalized yoga support for wellbeing and flexibility.',Features:'Gentle guided yoga|Breathing and relaxation|Individual attention|Suitable for specific wellness goals'},
  {Mode:'Online',Category:'Karate',PackageName:'Online Karate Class',Price:'Contact for Fee',Duration:'Monthly',Frequency:'Regular online sessions',Sessions:'Beginner and regular batch',Description:'Online karate training for discipline, fitness and confidence.',Features:'Basic techniques|Fitness drills|Discipline and confidence building'},
  {Mode:'Online',Category:'Dance',PackageName:'Online Dance Class',Price:'Contact for Fee',Duration:'Monthly',Frequency:'Regular online sessions',Sessions:'Group batch',Description:'Online dance training for rhythm, movement and expression.',Features:'Step-by-step learning|Creative movement|Beginner-friendly sessions'},
@@ -393,9 +532,9 @@ function fallbackPackages(){return [
 
 function handleForms(){
  document.querySelectorAll('form[data-sheet]').forEach(form=>form.addEventListener('submit',async e=>{
-  e.preventDefault(); const msg=form.querySelector('.form-message'); const payload=Object.fromEntries(new FormData(form).entries()); payload.sheet=form.dataset.sheet;
+  e.preventDefault(); const msg=form.querySelector('.form-message'); const payload=Object.fromEntries(new FormData(form).entries()); payload.sheet=form.dataset.sheet; payload.Page=location.pathname.split('/').pop() || 'index.html';
   if(!CONFIG.APPS_SCRIPT_URL || CONFIG.APPS_SCRIPT_URL.includes('PASTE_')){ if(msg) msg.textContent='Form is ready. Please paste the Web App URL in assets/config.js.'; return; }
-  try{ await fetch(CONFIG.APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}); form.reset(); if(msg) msg.textContent='Thank you. Your details have been submitted.'; }
+  try{ await fetch(CONFIG.APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}); form.reset(); if(msg) msg.textContent=form.dataset.successMessage || 'Thank you. Your details have been submitted.'; }
   catch(err){ if(msg) msg.textContent='Submission failed. Please contact us on WhatsApp.'; }
  }))
 }
