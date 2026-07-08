@@ -1,4 +1,4 @@
 Key,Value,Notes
-AdminPassword,12345,Default admin password. Change after setup.
-WhatsAppNumber,918921696649,Website WhatsApp number.
-ShoppingURL,https://www.freshly-online.com/freshlymart/#wellness,Shopping menu link.
+AdminPassword,12345,Change after first setup
+WhatsAppNumber,918921696649,Used for website side WhatsApp button
+ShoppingURL,https://www.freshly-online.com/freshlymart/#wellness,Shopping menu link for Freshly Mart wellness products

@@ -1,15 +1,13 @@
-const CACHE_NAME = 'pranavam-v59-css-assets-fix';
+const CACHE_NAME = 'pranavam-academy-pwa-v70';
 const CORE_ASSETS = [
   './',
   './index.html',
   './admin.html',
   './online-group-yoga.html',
   './therapeutic-yoga.html',
-  './assets/style.css?v=58',
-  './assets/config.js?v=58',
-  './assets/app.js?v=58',
-  './assets/admin/admin.css?v=58',
-  './assets/admin/admin.js?v=58',
+  './assets/style.css?v=70',
+  './assets/config.js?v=70',
+  './assets/app.js?v=70',
   './manifest.webmanifest',
   './assets/academy-logo.png',
   './assets/yoga-logo.png',

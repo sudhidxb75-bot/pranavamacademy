@@ -1,65 +1,57 @@
-# Pranavam Academy Website Package
+# Pranavam Academy revised package
 
-This package is revised from the working package and includes all discussed features.
+This package is based on the working Pranavam Academy package and includes the discussed features.
 
-## Included Features
+## Included
 
-- Backend-controlled header menu using the `Menu` sheet
-- All online programs under Online Programs menu
-  - Online Group Yoga
-  - Corporate Chair Yoga
-  - Therapeutic Yoga
-  - Online Karate
-  - Online Dance
-  - Online Music
-  - Online Drawing
-- Offline program submenu links pointing to the correct page sections
-- Shopping menu linking to Freshly Mart wellness products
-- WhatsApp button on the top strip
-- Install App option for PWA
-- Backend-controlled homepage sliding banners using `SliderBanners`
-- Backend-controlled site images using `SiteImages`
-- Backend-controlled class packages using `Packages`
-- Student registration form
-- Corporate chair yoga enquiry and registration forms
-- Teach With Us form
-- Admin dashboard at `admin.html`
-- Create reports, print sheets, backup main data and safe clear generated reports
-- Service worker cache version updated
+- Backend-controlled menu using the `Menu` sheet
+- Shopping menu moved to the end and linked to Freshly Mart wellness products
+- Admin and Install App removed from public menu
+- WhatsApp text removed from header area
+- Side WhatsApp button
+- Install App button next to WhatsApp button
+- PWA manifest and service worker
+- Backend-controlled sliding banners using `SliderBanners` sheet
+- Backend-controlled site images using `SiteImages` sheet
+- Backend-controlled class packages using `Packages` sheet
+- Online menu includes all online programs
+- Admin dashboard: `admin.html`
+- Reports, print sheets, backup and safe clear options in Apps Script
+- Yoga-related pages use the provided Pranavam Yoga logo
+- `.nojekyll` included for GitHub Pages asset loading
+
+## Files to upload
+
+Upload the full package contents to the repository root. Make sure the `assets` folder is uploaded completely.
+
+Required root files include:
+
+- `index.html`
+- `admin.html`
+- `google-apps-script.gs`
+- `assets/style.css`
+- `assets/app.js`
+- `assets/config.js`
+- `assets/academy-logo.png`
+- `assets/yoga-logo.png`
+- `assets/images/`
+- `.nojekyll`
 
 ## Setup
 
-1. Upload all files to your GitHub Pages repository.
-2. Open Google Sheets.
-3. Open Extensions → Apps Script.
-4. Paste the full code from `google-apps-script.gs`.
-5. Save and run `setupPranavamAcademySheets` once.
-6. Deploy as Web App:
-   - Execute as: Me
-   - Who has access: Anyone
-7. Copy the Web App URL.
-8. Open `assets/config.js` and paste the URL in `APPS_SCRIPT_URL`.
+1. Open your Google Sheet.
+2. Open Apps Script.
+3. Replace the script with `google-apps-script.gs`.
+4. Set `SPREADSHEET_ID` if needed.
+5. Run `setupPranavamAcademySheets` once.
+6. Deploy as Web App.
+7. Paste the Web App URL in `assets/config.js`:
 
-## Backend Sheets
+```js
+APPS_SCRIPT_URL: "PASTE_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE"
+```
 
-The Apps Script setup creates or repairs these sheets:
-
-- Menu
-- Settings
-- SliderBanners
-- SiteImages
-- Packages
-- Registrations
-- CorporateLeads
-- CorporateRegistrations
-- TeacherApplications
-- Referrals
-- Payments
-- Attendance
-- TeacherAttendance
-- ClassSchedule
-
-## Admin Dashboard
+## Admin dashboard
 
 Open:
 
@@ -69,84 +61,26 @@ Default password:
 
 `12345`
 
-Change it in the Google Sheet:
+Change it in the `Settings` sheet under `AdminPassword`.
 
-`Settings` sheet → `AdminPassword`
+## Backend sheets added
 
-## Important Admin Actions
+- `Menu`
+- `SliderBanners`
+- `SiteImages`
+- `Packages`
+- `Settings`
+- `Registrations`
+- `CorporateLeads`
+- `CorporateRegistrations`
+- `TeacherApplications`
+- `Payments`
+- `Attendance`
 
-The admin dashboard can:
+## Safe clear
 
-- View student enquiries
-- View corporate chair yoga leads
-- View teacher applications
-- View packages
-- View banners
-- View backend menu
-- View site images
-- Create reports
-- Backup main data
-- Clear generated reports only
-- Print follow-up sheets
+The dashboard safe clear option clears only generated reports and print sheets. It does not delete main registration data.
 
-The clear option does not delete main registration, corporate or teacher data. It only clears generated report sheets.
+## Cache note
 
-## Shopping Menu
-
-The Shopping menu uses this config value:
-
-`SHOPPING_URL: "https://www.freshly-online.com/freshlymart/#wellness"`
-
-You can change it in:
-
-`assets/config.js`
-
-The backend Menu sheet can use `shopping` as the PageLink value for the Shopping menu.
-
-## WhatsApp Number
-
-Change the WhatsApp number in:
-
-`assets/config.js`
-
-Example:
-
-`WHATSAPP_NUMBER: "918921696649"`
-
-## Backend-Controlled Images
-
-Update images in the `SiteImages` sheet. Use local paths such as:
-
-`assets/images/online-yoga.jpg`
-
-Or use a full hosted image URL.
-
-## Backend-Controlled Banners
-
-Update banners in the `SliderBanners` sheet.
-
-Important columns:
-
-- Page
-- SortOrder
-- Badge
-- Title
-- Subtitle
-- ImageURL
-- ButtonText
-- ButtonLink
-- SecondaryButtonText
-- SecondaryButtonLink
-- Status
-
-Only rows with `Status = Active` will show.
-
-## Backend-Controlled Packages
-
-Update packages in the `Packages` sheet.
-
-Only rows with `Status = Active` will show on the Packages page and in package dropdowns.
-
-
-## Important upload note
-Upload the complete package including the `assets` folder. If the website appears as plain text with broken images, `assets/style.css` and image files were not uploaded or the old cache is loading. After upload, hard refresh or unregister the old service worker.
+After upload, hard refresh the website with `Ctrl + Shift + R`. On mobile, open once in incognito if the old version still appears.
