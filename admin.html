@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pranavam Academy Admin Dashboard</title>
+  <meta name="theme-color" content="#116b3a" />
+  <link rel="icon" href="assets/pranavam-yoga-logo.png" />
+  <link rel="apple-touch-icon" href="assets/pranavam-yoga-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="stylesheet" href="assets/admin/admin.css" />
+</head>
+<body class="admin-body">
+  <header class="admin-header">
+    <a class="brand" href="index.html">
+      <img src="assets/pranavam-yoga-logo.png" alt="Pranavam Academy Logo" />
+      <div>
+        <strong>Pranavam Admin</strong>
+        <small>Dashboard • Reports • Print Sheets</small>
+      </div>
+    </a>
+    <div class="admin-header-actions">
+      <a class="btn outline" href="index.html">View Website</a>
+      <button class="install-btn" id="adminLogout" type="button" hidden>Logout</button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <section class="admin-login-card" id="loginPanel">
+      <span class="eyebrow">Admin Login</span>
+      <h1>Pranavam Academy Backend Dashboard</h1>
+      <p>Manage enquiries, corporate leads, teacher applications, reports, print sheets, packages and website content from Google Sheets.</p>
+      <form id="adminLoginForm">
+        <input type="password" name="password" placeholder="Admin password" required />
+        <button class="btn primary" type="submit">Open Dashboard</button>
+      </form>
+      <p class="form-status" id="loginStatus"></p>
+      <p class="admin-note">Default password after setup: <strong>12345</strong>. Change it in the Settings sheet using the key <strong>AdminPassword</strong>.</p>
+    </section>
+
+    <section class="admin-dashboard" id="dashboardPanel" hidden>
+      <div class="dashboard-title-row">
+        <div>
+          <span class="eyebrow">Dashboard</span>
+          <h1>Pranavam Academy Admin Dashboard</h1>
+          <p>Use this page to review enquiries, generate reports, print sheets and safely clear generated reports.</p>
+        </div>
+        <div class="dashboard-actions">
+          <button class="btn outline" id="refreshData" type="button">Refresh</button>
+          <button class="btn primary" id="generateReports" type="button">Create Reports</button>
+          <button class="btn outline" id="backupData" type="button">Backup Main Data</button>
+          <button class="btn danger" id="clearReports" type="button">Clear Reports</button>
+        </div>
+      </div>
+
+      <div class="stat-grid" id="statGrid"></div>
+
+      <nav class="admin-tabs" aria-label="Admin dashboard tabs">
+        <button class="active" data-tab="students" type="button">Student Enquiries</button>
+        <button data-tab="corporate" type="button">Corporate Leads</button>
+        <button data-tab="teachers" type="button">Teacher Applications</button>
+        <button data-tab="packages" type="button">Packages</button>
+        <button data-tab="programs" type="button">Programs</button>
+        <button data-tab="banners" type="button">Banners</button>
+        <button data-tab="reports" type="button">Reports</button>
+        <button data-tab="print" type="button">Print Sheets</button>
+      </nav>
+
+      <section class="tab-panel active" id="tab-students">
+        <div class="table-head"><h2>Student Enquiries</h2><button class="btn outline small" onclick="window.print()">Print</button></div>
+        <div class="table-wrap" id="studentsTable"></div>
+      </section>
+      <section class="tab-panel" id="tab-corporate">
+        <div class="table-head"><h2>Corporate Chair Yoga Leads</h2><button class="btn outline small" onclick="window.print()">Print</button></div>
+        <div class="table-wrap" id="corporateTable"></div>
+      </section>
+      <section class="tab-panel" id="tab-teachers">
+        <div class="table-head"><h2>Teacher Applications</h2><button class="btn outline small" onclick="window.print()">Print</button></div>
+        <div class="table-wrap" id="teachersTable"></div>
+      </section>
+      <section class="tab-panel" id="tab-packages">
+        <div class="table-head"><h2>Backend Packages</h2><button class="btn outline small" onclick="window.print()">Print</button></div>
+        <div class="table-wrap" id="packagesTable"></div>
+      </section>
+      <section class="tab-panel" id="tab-programs">
+        <div class="table-head"><h2>Website Programs</h2><button class="btn outline small" onclick="window.print()">Print</button></div>
+        <div class="table-wrap" id="programsTable"></div>
+      </section>
+      <section class="tab-panel" id="tab-banners">
+        <div class="table-head"><h2>Sliding Banners</h2><button class="btn outline small" onclick="window.print()">Print</button></div>
+        <div class="table-wrap" id="bannersTable"></div>
+      </section>
+      <section class="tab-panel" id="tab-reports">
+        <div class="table-head"><h2>Reports Summary</h2><button class="btn outline small" onclick="window.print()">Print</button></div>
+        <p class="admin-note">Click <strong>Create Reports</strong> to update the Reports sheet in Google Sheets.</p>
+        <div class="table-wrap" id="reportsTable"></div>
+      </section>
+      <section class="tab-panel print-area" id="tab-print">
+        <div class="table-head"><h2>Print Sheets</h2><button class="btn primary small" onclick="window.print()">Print Current View</button></div>
+        <p class="admin-note">These are print-friendly views for daily follow-up. They are generated from live backend sheets.</p>
+        <h3>Daily Student Follow-up Sheet</h3>
+        <div class="table-wrap" id="printStudentsTable"></div>
+        <h3>Corporate Lead Follow-up Sheet</h3>
+        <div class="table-wrap" id="printCorporateTable"></div>
+        <h3>Teacher Application Sheet</h3>
+        <div class="table-wrap" id="printTeachersTable"></div>
+      </section>
+      <p class="form-status" id="adminStatus"></p>
+    </section>
+  </main>
+
+  <script src="assets/config.js"></script>
+  <script src="assets/admin/admin.js"></script>
+</body>
+</html>
