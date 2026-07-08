@@ -146,3 +146,7 @@ Only rows with `Status = Active` will show.
 Update packages in the `Packages` sheet.
 
 Only rows with `Status = Active` will show on the Packages page and in package dropdowns.
+
+
+## Important upload note
+Upload the complete package including the `assets` folder. If the website appears as plain text with broken images, `assets/style.css` and image files were not uploaded or the old cache is loading. After upload, hard refresh or unregister the old service worker.

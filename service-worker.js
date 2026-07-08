@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pranavam-academy-pwa-v8-admin-menu';
+const CACHE_NAME = 'pranavam-v59-css-assets-fix';
 const CORE_ASSETS = [
   './',
   './index.html',
