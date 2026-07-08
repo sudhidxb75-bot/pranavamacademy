@@ -65,6 +65,25 @@ function doGet(e) {
       return webOutput_(result, params);
     }
 
+    if (action === 'menu') {
+      const rows = getActiveSheetObjects_('Menu')
+        .sort((a, b) => Number(a.SortOrder || 999) - Number(b.SortOrder || 999));
+      result = { ok: true, status: 'success', data: rows };
+      return webOutput_(result, params);
+    }
+
+    if (action === 'adminAction') {
+      const data = Object.assign({}, params);
+      data.Action = params.adminAction || params.AdminAction || params.Admin || '';
+      data.AdminPassword = params.password || params.AdminPassword || '';
+      return handleAdminAction_(data, params);
+    }
+
+    if (action === 'adminData') {
+      result = { ok: true, status: 'success', data: getAdminData_() };
+      return webOutput_(result, params);
+    }
+
     if (action === 'siteImages') {
       result = { ok: true, status: 'success', data: getActiveSheetObjects_('SiteImages') };
       return webOutput_(result, params);
@@ -91,7 +110,7 @@ function doGet(e) {
       ok: true,
       status: 'success',
       message: 'Pranavam Academy backend is reachable.',
-      actions: ['siteImages', 'sliderBanners', 'packages', 'setup']
+      actions: ['menu', 'siteImages', 'sliderBanners', 'packages', 'adminData', 'setup']
     };
     return webOutput_(result, params);
   } catch (err) {
@@ -103,6 +122,7 @@ function doGet(e) {
 function doPost(e) {
   try {
     const data = parsePostData_(e);
+    if (data.Action) return handleAdminAction_(data);
     const sheetName = sanitizeSheetName_(data.sheet || data.Sheet || data.formType || 'Registrations');
     const ss = getSpreadsheet_();
     const sh = ss.getSheetByName(sheetName) || ss.insertSheet(sheetName);
@@ -120,6 +140,8 @@ function setupPranavamAcademySheets() {
     const sh = ss.getSheetByName(name) || ss.insertSheet(name);
     ensureHeaders_(sh, name);
   });
+  seedSettings_();
+  seedMenu_();
   seedPackages_();
   seedSiteImages_();
   seedSliderBanners_();
@@ -187,7 +209,8 @@ function headerMap_() {
     Packages: ['PackageID','Mode','Category','PackageName','Price','Duration','Frequency','Sessions','ClassTime','Location','Features','Description','ReferralDiscount','TrialAvailable','Status'],
     SiteImages: ['ImageKey','SectionName','ImageURL','AltText','Status','Notes'],
     SliderBanners: ['BannerID','Page','SortOrder','Badge','Title','Subtitle','ImageURL','AltText','ButtonText','ButtonLink','SecondaryButtonText','SecondaryButtonLink','Status','Notes'],
-    Settings: ['Key','Value','Notes']
+    Settings: ['Key','Value','Notes'],
+    Menu: ['MenuID','ParentID','MenuName','PageLink','SortOrder','Status','OpenType','Footer']
   };
 }
 
@@ -734,6 +757,129 @@ function escapeHtml_(text) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+
+
+function seedSettings_() {
+  const ss = getSpreadsheet_();
+  const sh = ss.getSheetByName('Settings') || ss.insertSheet('Settings');
+  ensureHeaders_(sh, 'Settings');
+  const settings = getSheetObjects_('Settings');
+  const hasKey = key => settings.some(r => String(r.Key || '').trim() === key);
+  const rows = [];
+  if (!hasKey('AdminPassword')) rows.push(['AdminPassword','12345','Default admin dashboard password. Change this after setup.']);
+  if (!hasKey('WhatsAppNumber')) rows.push(['WhatsAppNumber','918921696649','Website WhatsApp number.']);
+  if (!hasKey('ShoppingURL')) rows.push(['ShoppingURL','https://www.freshly-online.com/freshlymart/#wellness','Shopping menu link for Freshly Mart wellness products.']);
+  if (rows.length) sh.getRange(sh.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
+}
+
+function seedMenu_() {
+  const ss = getSpreadsheet_();
+  const sh = ss.getSheetByName('Menu') || ss.insertSheet('Menu');
+  ensureHeaders_(sh, 'Menu');
+  if (sh.getLastRow() > 1) return;
+  const rows = defaultMenu_();
+  sh.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
+}
+
+function defaultMenu_() {
+  return [
+    ['MENU001','','Home','index.html',1,'Active','Same','Yes'],
+    ['MENU002','','Online Programs','#',2,'Active','Same','No'],
+    ['MENU003','MENU002','Online Group Yoga','online-group-yoga.html',1,'Active','Same','No'],
+    ['MENU004','MENU002','Corporate Chair Yoga','corporate-chair-yoga.html',2,'Active','Same','No'],
+    ['MENU005','MENU002','Therapeutic Yoga','therapeutic-yoga.html',3,'Active','Same','No'],
+    ['MENU006','MENU002','Online Karate','online-karate.html',4,'Active','Same','No'],
+    ['MENU007','MENU002','Online Dance','online-dance.html',5,'Active','Same','No'],
+    ['MENU008','MENU002','Online Music','online-music.html',6,'Active','Same','No'],
+    ['MENU009','MENU002','Online Drawing','online-drawing.html',7,'Active','Same','No'],
+    ['MENU010','','Offline Programs','#',3,'Active','Same','No'],
+    ['MENU011','MENU010','Yoga','offline-classes.html#yoga',1,'Active','Same','No'],
+    ['MENU012','MENU010','Karate','offline-classes.html#karate',2,'Active','Same','No'],
+    ['MENU013','MENU010','Dance','offline-classes.html#dance',3,'Active','Same','No'],
+    ['MENU014','MENU010','Music','offline-classes.html#music',4,'Active','Same','No'],
+    ['MENU015','MENU010','Drawing','offline-classes.html#drawing',5,'Active','Same','No'],
+    ['MENU017','','Packages','packages.html',4,'Active','Same','Yes'],
+    ['MENU018','','Register','register.html',5,'Active','Same','Yes'],
+    ['MENU019','','Teach With Us','become-a-teacher.html',6,'Active','Same','Yes'],
+    ['MENU016','','Shopping','shopping',99,'Active','New','Yes']
+  ];
+}
+
+function getAdminData_() {
+  const regs = getSheetObjects_('Registrations');
+  const corp = getSheetObjects_('CorporateLeads').concat(getSheetObjects_('CorporateRegistrations'));
+  const teachers = getSheetObjects_('TeacherApplications');
+  const packagesRows = getSheetObjects_('Packages');
+  const banners = getSheetObjects_('SliderBanners');
+  const menu = getSheetObjects_('Menu');
+  const images = getSheetObjects_('SiteImages');
+  const reports = getSpreadsheet_().getSheets().filter(sh => isGeneratedReportSheet_(sh.getName())).map(sh => ({ReportName: sh.getName(), Rows: Math.max(0, sh.getLastRow()-1), UpdatedAt: formatDateTime_(new Date())}));
+  const today = formatDateOnly_(new Date());
+  const isToday = r => String(r.Timestamp || '').indexOf(today) === 0;
+  return {
+    summary: {
+      registrations: regs.length,
+      corporateLeads: corp.length,
+      teacherApplications: teachers.length,
+      activePackages: packagesRows.filter(r => String(r.Status || 'Active').toLowerCase()==='active').length,
+      activeBanners: banners.filter(r => String(r.Status || 'Active').toLowerCase()==='active').length,
+      activeMenuItems: menu.filter(r => String(r.Status || 'Active').toLowerCase()==='active').length,
+      siteImages: images.filter(r => String(r.Status || 'Active').toLowerCase()==='active').length,
+      todayEnquiries: regs.filter(isToday).length + corp.filter(isToday).length + teachers.filter(isToday).length
+    },
+    registrations: regs,
+    corporate: corp,
+    teachers: teachers,
+    packages: packagesRows,
+    banners: banners,
+    menu: menu,
+    images: images,
+    reports: reports
+  };
+}
+
+function handleAdminAction_(data, webParams) {
+  const output = obj => webParams ? webOutput_(obj, webParams) : jsonOutput_(obj);
+  const action = String(data.Action || '').trim();
+  const pass = String(data.AdminPassword || '').trim();
+  if (action === 'adminLogin') return output({ ok: verifyAdminPassword_(pass), message: verifyAdminPassword_(pass) ? 'Login successful' : 'Invalid admin password' });
+  if (!verifyAdminPassword_(pass)) return output({ ok: false, message: 'Invalid admin password' });
+  if (action === 'getAdminData') return output({ ok: true, data: getAdminData_() });
+  if (action === 'generateReports') { createAllReports(false); return output({ ok: true, message: 'Reports and print sheets created.' }); }
+  if (action === 'backupMainData') { const count = backupMainData_(); return output({ ok: true, message: 'Backup completed for ' + count + ' sheet(s).' }); }
+  if (action === 'clearGeneratedReports') { const count = deleteGeneratedSheets_(name => isGeneratedReportSheet_(name) || name.indexOf('DailySheet_') === 0); return output({ ok: true, message: count + ' generated sheet(s) cleared. Main data was not deleted.' }); }
+  return output({ ok: false, message: 'Unknown admin action: ' + action });
+}
+
+function verifyAdminPassword_(password) {
+  const settings = getSheetObjects_('Settings');
+  const row = settings.find(r => String(r.Key || '').trim() === 'AdminPassword');
+  const saved = row ? String(row.Value || '').trim() : '12345';
+  return String(password || '').trim() === saved;
+}
+
+function backupMainData_() {
+  const ss = getSpreadsheet_();
+  const name = 'Backup_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
+  const backup = ss.insertSheet(name);
+  const sourceSheets = ['Registrations','CorporateLeads','CorporateRegistrations','TeacherApplications','Referrals','Payments','Attendance','TeacherAttendance'];
+  let row = 1;
+  sourceSheets.forEach(sheetName => {
+    const sh = ss.getSheetByName(sheetName);
+    if (!sh) return;
+    const values = sh.getDataRange().getDisplayValues();
+    backup.getRange(row, 1).setValue(sheetName);
+    backup.getRange(row, 1).setFontWeight('bold').setBackground('#0f5132').setFontColor('#ffffff');
+    row++;
+    if (values.length && values[0].length) {
+      backup.getRange(row, 1, values.length, values[0].length).setValues(values);
+      row += values.length + 2;
+    }
+  });
+  backup.autoResizeColumns(1, Math.max(1, backup.getLastColumn()));
+  return sourceSheets.length;
 }
 
 /* ===============================
