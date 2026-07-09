@@ -128,3 +128,27 @@
   .dropdown .dropbtn::after{content:' +';float:right;font-weight:900;}
   .dropdown.open>.dropbtn::after{content:' –';}
 }
+
+/* Revision 2026-07-09 C: keep desktop WhatsApp top-right, move WhatsApp down only on mobile */
+@media(max-width:900px){
+  .whatsapp-btn{
+    top:auto!important;
+    bottom:16px!important;
+    left:12px!important;
+    right:auto!important;
+    padding:11px 13px!important;
+    font-size:13px!important;
+  }
+  .install-side-btn{
+    top:auto!important;
+    bottom:16px!important;
+    right:12px!important;
+    left:auto!important;
+    padding:11px 13px!important;
+    font-size:13px!important;
+  }
+  .footer{padding-bottom:96px!important;}
+}
+@media(max-width:420px){
+  .whatsapp-btn,.install-side-btn{font-size:12px!important;padding:10px 11px!important;}
+}
