@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pranavam-academy-pwa-v70';
+const CACHE_NAME = 'pranavam-academy-v20260709b';
 const CORE_ASSETS = [
   './',
   './index.html',

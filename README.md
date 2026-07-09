@@ -84,3 +84,17 @@ The dashboard safe clear option clears only generated reports and print sheets. 
 ## Cache note
 
 After upload, hard refresh the website with `Ctrl + Shift + R`. On mobile, open once in incognito if the old version still appears.
+
+
+## 2026-07-09 revision
+- WhatsApp quick button moved to the bottom-right.
+- Install App button moved to the top-right end.
+- Shopping menu/link is forced through `SHOPPING_URL` in `assets/config.js` and opens in a new tab.
+- Cache version updated to avoid old button positions loading after upload.
+
+Latest revision 2026-07-09 B:
+- WhatsApp button is fixed at the top-right side.
+- Install App button is fixed at the bottom-right side.
+- Mobile menu includes the same main menu items as desktop.
+- Mobile submenus open on click/tap and stay open until a submenu link is selected.
+- Shopping menu remains linked to Freshly Mart wellness products through assets/config.js.
